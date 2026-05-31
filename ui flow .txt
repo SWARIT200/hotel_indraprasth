@@ -1,0 +1,19 @@
+landing page:--
+
+navbar 
+intro  page(scrolling images)
+testimonials
+footer  (about us)
+
+
+gallery page :--
+images 
+footer  (about us)
+
+rooms :- 
+ac room /non ac 
+footer  (about us)
+
+
+
+
