@@ -195,42 +195,56 @@
          SCRIPTS
          ============================================ -->
     <script>
-        // ---- Hero Slideshow ----
+        // ---- Hero Sliding Carousel ----
+        const slideshow = document.querySelector('.hero-slideshow');
         const slides = document.querySelectorAll('.hero-slide');
         const indicators = document.querySelectorAll('.hero-indicator');
+        const totalSlides = slides.length;
         let currentSlide = 0;
         let slideInterval;
 
         function goToSlide(index) {
-            // Reset animation on current slide image
-            const currentImg = slides[currentSlide].querySelector('img');
-            if (currentImg) currentImg.style.animation = 'none';
-
+            // Remove active from current slide (resets zoom)
             slides[currentSlide].classList.remove('active');
             indicators[currentSlide].classList.remove('active');
 
+            // Reset the zoom on the previous slide image instantly
+            const prevImg = slides[currentSlide].querySelector('img');
+            if (prevImg) prevImg.style.transform = 'scale(1)';
+
             currentSlide = index;
 
+            // Slide the track to the correct position
+            const offset = -(currentSlide * (100 / totalSlides));
+            slideshow.style.transform = `translateX(${offset}%)`;
+
+            // Mark the new slide as active (triggers zoom via CSS)
             slides[currentSlide].classList.add('active');
             indicators[currentSlide].classList.add('active');
 
-            // Re-trigger zoom animation on new slide image
+            // Re-trigger zoom: briefly reset then apply
             const newImg = slides[currentSlide].querySelector('img');
             if (newImg) {
-                void newImg.offsetWidth;
-                newImg.style.animation = '';
+                newImg.style.transition = 'none';
+                newImg.style.transform = 'scale(1)';
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        newImg.style.transition = 'transform 6s ease-out';
+                        newImg.style.transform = 'scale(1.03)';
+                    });
+                });
             }
         }
 
         function nextSlide() {
-            goToSlide((currentSlide + 1) % slides.length);
+            goToSlide((currentSlide + 1) % totalSlides);
         }
 
         function startSlideshow() {
             slideInterval = setInterval(nextSlide, 6000);
         }
 
-        // Click on indicators
+        // Click on indicators — jump to that slide
         indicators.forEach((indicator, index) => {
             indicator.addEventListener('click', () => {
                 clearInterval(slideInterval);
@@ -238,6 +252,14 @@
                 startSlideshow();
             });
         });
+
+        // Initialize first slide zoom
+        slides[0].classList.add('active');
+        const firstImg = slides[0].querySelector('img');
+        if (firstImg) {
+            firstImg.style.transition = 'transform 6s ease-out';
+            firstImg.style.transform = 'scale(1.03)';
+        }
 
         startSlideshow();
 

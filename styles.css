@@ -225,7 +225,7 @@ img {
 }
 
 /* ============================================
-   HERO SECTION - Full Screen Slideshow
+   HERO SECTION - Horizontal Sliding Carousel
    ============================================ */
 .hero {
     position: relative;
@@ -235,22 +235,19 @@ img {
 }
 
 .hero-slideshow {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+    display: flex;
+    width: 300%; /* 3 slides × 100% each */
     height: 100%;
+    transition: transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .hero-slide {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+    width: 33.333333%;
     height: 100%;
-    opacity: 0;
-    transition: opacity 1.5s ease-in-out;
+    flex-shrink: 0;
     overflow: hidden;
+    position: relative;
+    background: #1a1510;
 }
 
 .hero-slide img {
@@ -259,20 +256,12 @@ img {
     object-fit: cover;
     object-position: center;
     display: block;
-}
-
-.hero-slide.active {
-    opacity: 1;
+    transition: transform 6s ease-out;
 }
 
 /* Subtle zoom animation on active slide */
 .hero-slide.active img {
-    animation: heroZoom 8s ease-in-out forwards;
-}
-
-@keyframes heroZoom {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.06); }
+    transform: scale(1.03);
 }
 
 /* Slide indicators */
@@ -282,7 +271,7 @@ img {
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 12px;
+    gap: 14px;
     z-index: 10;
 }
 
@@ -290,17 +279,22 @@ img {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.45);
-    border: 2px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.35);
+    border: 2px solid rgba(255, 255, 255, 0.65);
     cursor: pointer;
     transition: all 0.4s ease;
+}
+
+.hero-indicator:hover {
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(1.15);
 }
 
 .hero-indicator.active {
     background: #d4af37;
     border-color: #d4af37;
     box-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
-    transform: scale(1.15);
+    transform: scale(1.2);
 }
 
 /* ============================================
@@ -844,6 +838,11 @@ img {
 
     .navbar-links.open {
         right: 0;
+    }
+
+    .navbar-transparent .navbar-links a:not(.btn-book-now) {
+        color: #3a3a3a;
+        text-shadow: none;
     }
 
     .navbar-toggle {
