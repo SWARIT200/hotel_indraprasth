@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Book your stay at Indraprasth Hotel, Mau. Choose from premium AC and classic Non-AC heritage rooms.">
+    <title>Book Your Stay | Indraprasth Hotel</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+
+<body>
+
+    <!-- ============================================
+         NAVBAR
+         ============================================ -->
+    <nav class="navbar navbar-transparent" id="mainNavbar">
+        <a href="index.html" class="navbar-logo">
+            <svg class="logo-icon" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="25" cy="25" r="23" stroke="#2c2c2c" stroke-width="1.5" fill="none" />
+                <circle cx="25" cy="25" r="19" stroke="#b8960c" stroke-width="0.8" fill="none" />
+                <path d="M25 8 C25 8, 20 18, 25 25 C30 18, 25 8, 25 8Z" fill="#2c2c2c" opacity="0.8" />
+                <path d="M25 8 C25 8, 30 18, 25 25 C20 18, 25 8, 25 8Z" fill="#b8960c" opacity="0.5" />
+                <path d="M12 20 C12 20, 20 22, 25 25 C18 28, 12 20, 12 20Z" fill="#2c2c2c" opacity="0.6" />
+                <path d="M38 20 C38 20, 30 22, 25 25 C32 28, 38 20, 38 20Z" fill="#2c2c2c" opacity="0.6" />
+                <path d="M15 33 C15 33, 20 28, 25 25 C22 32, 15 33, 15 33Z" fill="#b8960c" opacity="0.5" />
+                <path d="M35 33 C35 33, 30 28, 25 25 C28 32, 35 33, 35 33Z" fill="#b8960c" opacity="0.5" />
+                <circle cx="25" cy="25" r="3" fill="#b8960c" />
+                <path d="M17 38 Q25 42 33 38" stroke="#2c2c2c" stroke-width="1.2" fill="none" />
+                <path d="M20 40 Q25 43 30 40" stroke="#b8960c" stroke-width="0.8" fill="none" />
+            </svg>
+            <span class="logo-text">Indraprasth</span>
+        </a>
+        <div class="navbar-links" id="navLinks">
+            <a href="gallery.html">Gallery</a>
+            <a href="rooms.html">Rooms</a>
+            <a href="#">Banquet</a>
+            <a href="#">Lawn</a>
+            <a href="booking.html" class="btn-book-now active">Book Now</a>
+        </div>
+        <div class="navbar-toggle" id="navToggle" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <!-- ============================================
+         BOOKING HERO SECTION
+         ============================================ -->
+    <section class="booking-hero" id="bookingHero">
+        <div class="booking-hero-bg">
+            <img src="images/hero_bg_2.png" alt="Indraprasth Hotel Lobby">
+        </div>
+        <div class="booking-hero-overlay"></div>
+
+        <!-- Booking Form Card -->
+        <div class="booking-card" id="bookingCard">
+            <!-- Decorative gold corners -->
+            <div class="gold-corner top-right"></div>
+            <div class="gold-corner bottom-left"></div>
+
+            <div class="booking-card-header">
+                <h1 class="booking-title">Reserve Your Stay</h1>
+                <p class="booking-subtitle">Experience heritage luxury at Indraprasth</p>
+                <div class="booking-title-line"></div>
+            </div>
+
+            <form id="bookingForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="guestName">Full Name</label>
+                    <input type="text" id="guestName" name="guestName" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="guestPhone">Phone Number</label>
+                    <input type="tel" id="guestPhone" name="guestPhone" placeholder="Enter 10-digit phone number" pattern="[0-9]{10}" maxlength="10" minlength="10" title="Please enter exactly 10 digits" required onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                </div>
+
+                <div class="form-group">
+                    <label for="roomType">Room Type</label>
+                    <select id="roomType" name="roomType" required>
+                        <option value="" disabled selected>Select room type</option>
+                        <option value="non-ac">Non-AC Room</option>
+                        <option value="ac">AC Room</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="checkInDate">Check-in Date</label>
+                        <input type="date" id="checkInDate" name="checkInDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkInTime">Check-in Time</label>
+                        <input type="time" id="checkInTime" name="checkInTime" value="12:00" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="checkOutDate">Check-out Date</label>
+                        <input type="date" id="checkOutDate" name="checkOutDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="checkOutTime">Check-out Time</label>
+                        <input type="time" id="checkOutTime" name="checkOutTime" value="11:00" required>
+                    </div>
+                </div>
+
+                <!-- Availability Status -->
+                <div class="availability-status" id="availabilityStatus"></div>
+
+                <button type="submit" class="btn-submit" id="btnSubmit">
+                    <span class="btn-text">Book Now</span>
+                    <span class="btn-loader" id="btnLoader">
+                        <svg class="spinner" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
+                                stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                        </svg>
+                        Booking...
+                    </span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Success Message (hidden by default) -->
+        <div class="booking-success" id="bookingSuccess">
+            <div class="success-card">
+                <div class="gold-corner top-right"></div>
+                <div class="gold-corner bottom-left"></div>
+                <div class="success-icon">
+                    <svg viewBox="0 0 52 52">
+                        <circle cx="26" cy="26" r="24" fill="none" stroke="#b8960c" stroke-width="2" />
+                        <path fill="none" stroke="#b8960c" stroke-width="3" stroke-linecap="round"
+                            stroke-linejoin="round" d="M14 27l8 8 16-16" class="checkmark-path" />
+                    </svg>
+                </div>
+                <h2 class="success-title">Booking Confirmed!</h2>
+                <p class="success-message">Thank you for choosing Indraprasth Hotel. We look forward to welcoming you.</p>
+                <div class="success-details" id="successDetails"></div>
+                <a href="index.html" class="btn-back-home">Back to Home</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script>
+        // ---- Supabase Configuration ----
+        const SUPABASE_URL = 'https://zbvvmvjlkcsmkkxjodag.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpidnZtdmpsa2NzbWtreGpvZGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTA3NDIsImV4cCI6MjA5NjY2Njc0Mn0.BZq8m5aOHsfTraUZoi0ujt3EEgm3r0LnfpxYHmS_j04';
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ---- Room Configuration ----
+        const ROOM_MAP = {
+            'non-ac': ['101', '102', '103'],
+            'ac': ['104', '105', '106']
+        };
+        const TYPE_LABELS = { 'non-ac': 'Non-AC', 'ac': 'AC' };
+
+        // ---- DOM References ----
+        const bookingForm = document.getElementById('bookingForm');
+        const bookingCard = document.getElementById('bookingCard');
+        const bookingSuccess = document.getElementById('bookingSuccess');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const availabilityStatus = document.getElementById('availabilityStatus');
+        const checkInInput = document.getElementById('checkInDate');
+        const checkOutInput = document.getElementById('checkOutDate');
+        const roomTypeSelect = document.getElementById('roomType');
+
+        // ---- Smart Date Validation ----
+        function getTodayString() {
+            const today = new Date();
+            return today.toISOString().split('T')[0];
+        }
+
+        function initDateConstraints() {
+            const today = getTodayString();
+            checkInInput.min = today;
+            checkOutInput.min = today;
+        }
+
+        checkInInput.addEventListener('change', () => {
+            const checkIn = checkInInput.value;
+            if (checkIn) {
+                const nextDay = new Date(checkIn);
+                nextDay.setDate(nextDay.getDate() + 1);
+                const nextDayStr = nextDay.toISOString().split('T')[0];
+                checkOutInput.min = nextDayStr;
+
+                if (checkOutInput.value && checkOutInput.value <= checkIn) {
+                    checkOutInput.value = nextDayStr;
+                }
+            }
+            // Clear old availability messages when dates change
+            availabilityStatus.innerHTML = '';
+            availabilityStatus.className = 'availability-status';
+        });
+
+        checkOutInput.addEventListener('change', () => {
+            availabilityStatus.innerHTML = '';
+            availabilityStatus.className = 'availability-status';
+        });
+
+        roomTypeSelect.addEventListener('change', () => {
+            availabilityStatus.innerHTML = '';
+            availabilityStatus.className = 'availability-status';
+        });
+
+        // ---- Find an available room of a given type ----
+        async function findAvailableRoom(type, checkIn, checkOut) {
+            const rooms = ROOM_MAP[type];
+            for (const roomNum of rooms) {
+                const { data, error } = await supabaseClient
+                    .from('bookings')
+                    .select('id')
+                    .eq('room_number', roomNum)
+                    .lt('check_in_date', checkOut)
+                    .gt('check_out_date', checkIn);
+
+                if (error) throw error;
+                // If no conflicts, this room is free
+                if (!data || data.length === 0) {
+                    return roomNum;
+                }
+            }
+            return null; // All rooms of this type are booked
+        }
+
+        // ---- Form Submission ----
+        bookingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const guestName = document.getElementById('guestName').value.trim();
+            const guestPhone = document.getElementById('guestPhone').value.trim();
+            const selectedType = roomTypeSelect.value;
+            const checkInDate = checkInInput.value;
+            const checkOutDate = checkOutInput.value;
+            const checkInTime = document.getElementById('checkInTime').value;
+            const checkOutTime = document.getElementById('checkOutTime').value;
+
+            if (!guestName || !guestPhone || !selectedType || !checkInDate || !checkOutDate) return;
+
+            // Show loading state
+            btnSubmit.classList.add('loading');
+            btnSubmit.disabled = true;
+            availabilityStatus.innerHTML = '';
+            availabilityStatus.className = 'availability-status';
+
+            try {
+                // 1. Try to find an available room of the selected type
+                let assignedRoom = await findAvailableRoom(selectedType, checkInDate, checkOutDate);
+
+                if (assignedRoom) {
+                    // Room found — insert booking
+                    await insertBooking(guestName, guestPhone, assignedRoom, checkInDate, checkOutDate, checkInTime, checkOutTime, selectedType);
+                    return;
+                }
+
+                // 2. Selected type is full — check the other type
+                const otherType = selectedType === 'ac' ? 'non-ac' : 'ac';
+                const otherRoom = await findAvailableRoom(otherType, checkInDate, checkOutDate);
+
+                if (otherRoom) {
+                    // Other type available — show suggestion
+                    const otherLabel = TYPE_LABELS[otherType];
+                    const selectedLabel = TYPE_LABELS[selectedType];
+                    availabilityStatus.innerHTML = `
+                        <span class="status-unavailable" style="margin-bottom:10px;display:block;">✕ All ${selectedLabel} rooms are booked for these dates.</span>
+                        <span class="status-available">
+                            ✓ ${otherLabel} rooms are available!
+                            <button type="button" class="btn-switch-type" id="btnSwitchType">Book ${otherLabel} Instead</button>
+                        </span>
+                    `;
+                    availabilityStatus.className = 'availability-status show';
+
+                    // Attach click handler to switch button
+                    document.getElementById('btnSwitchType').addEventListener('click', async () => {
+                        availabilityStatus.innerHTML = '<span class="status-checking">Booking your room...</span>';
+                        btnSubmit.classList.add('loading');
+                        btnSubmit.disabled = true;
+                        try {
+                            // Re-check in case it was taken in the meantime
+                            const freshRoom = await findAvailableRoom(otherType, checkInDate, checkOutDate);
+                            if (freshRoom) {
+                                await insertBooking(guestName, guestPhone, freshRoom, checkInDate, checkOutDate, checkInTime, checkOutTime, otherType);
+                            } else {
+                                availabilityStatus.innerHTML = '<span class="status-unavailable">✕ Sorry, all rooms have been booked for these dates. Please try different dates.</span>';
+                                availabilityStatus.className = 'availability-status show';
+                                btnSubmit.classList.remove('loading');
+                                btnSubmit.disabled = false;
+                            }
+                        } catch (err) {
+                            console.error('Switch booking error:', err);
+                            availabilityStatus.innerHTML = '<span class="status-unavailable">Something went wrong. Please try again.</span>';
+                            availabilityStatus.className = 'availability-status show';
+                            btnSubmit.classList.remove('loading');
+                            btnSubmit.disabled = false;
+                        }
+                    });
+                } else {
+                    // 3. Both types are full — sorry
+                    availabilityStatus.innerHTML = '<span class="status-unavailable">✕ Sorry, all rooms are fully booked for the selected dates. Please try different dates.</span>';
+                    availabilityStatus.className = 'availability-status show';
+                }
+
+                btnSubmit.classList.remove('loading');
+                btnSubmit.disabled = false;
+
+            } catch (err) {
+                console.error('Booking error:', err);
+                availabilityStatus.innerHTML = '<span class="status-unavailable">Something went wrong. Please try again.</span>';
+                availabilityStatus.className = 'availability-status show';
+                btnSubmit.classList.remove('loading');
+                btnSubmit.disabled = false;
+            }
+        });
+
+        // ---- Insert Booking & Show Success ----
+        async function insertBooking(name, phone, roomNum, checkIn, checkOut, timeIn, timeOut, type) {
+            const { error } = await supabaseClient
+                .from('bookings')
+                .insert({
+                    guest_name: name,
+                    guest_phone: phone,
+                    room_number: roomNum,
+                    check_in_date: checkIn,
+                    check_in_time: timeIn,
+                    check_out_date: checkOut,
+                    check_out_time: timeOut
+                });
+
+            if (error) throw error;
+
+            const nights = Math.round((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24));
+            const typeLabel = TYPE_LABELS[type];
+
+            document.getElementById('successDetails').innerHTML = `
+                <div class="detail-row"><span>Guest</span><strong>${name}</strong></div>
+                <div class="detail-row"><span>Room Type</span><strong>${typeLabel}</strong></div>
+                <div class="detail-row"><span>Room Assigned</span><strong>${roomNum}</strong></div>
+                <div class="detail-row"><span>Check-in</span><strong>${formatDate(checkIn)} at ${formatTime(timeIn)}</strong></div>
+                <div class="detail-row"><span>Check-out</span><strong>${formatDate(checkOut)} at ${formatTime(timeOut)}</strong></div>
+                <div class="detail-row"><span>Duration</span><strong>${nights} Night${nights > 1 ? 's' : ''}</strong></div>
+            `;
+
+            bookingCard.classList.add('hide');
+            setTimeout(() => {
+                bookingCard.style.display = 'none';
+                bookingSuccess.classList.add('show');
+            }, 500);
+        }
+
+        // ---- Utility Functions ----
+        function formatDate(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function formatTime(timeStr) {
+            const [h, m] = timeStr.split(':');
+            const hour = parseInt(h);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const h12 = hour % 12 || 12;
+            return `${h12}:${m} ${ampm}`;
+        }
+
+        // ---- Navbar Scroll Effect ----
+        const navbar = document.getElementById('mainNavbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 80) {
+                navbar.classList.add('scrolled');
+                navbar.classList.remove('navbar-transparent');
+            } else {
+                navbar.classList.remove('scrolled');
+                navbar.classList.add('navbar-transparent');
+            }
+        });
+
+        // ---- Mobile Menu Toggle ----
+        function toggleMenu() {
+            document.getElementById('navLinks').classList.toggle('open');
+        }
+
+        document.querySelectorAll('.navbar-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('open');
+            });
+        });
+
+        // Initialize
+        initDateConstraints();
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Owner login portal for Indraprasth Hotel management dashboard.">
+    <title>Management Login | Indraprasth Hotel</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+
+<body>
+
+    <!-- ============================================
+         LOGIN SECTION
+         ============================================ -->
+    <section class="login-section">
+        <div class="login-bg-pattern"></div>
+
+        <div class="login-card" id="loginCard">
+            <div class="gold-corner top-right"></div>
+            <div class="gold-corner bottom-left"></div>
+
+            <!-- Logo -->
+            <div class="login-logo">
+                <svg class="logo-icon" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="25" cy="25" r="23" stroke="#2c2c2c" stroke-width="1.5" fill="none" />
+                    <circle cx="25" cy="25" r="19" stroke="#b8960c" stroke-width="0.8" fill="none" />
+                    <path d="M25 8 C25 8, 20 18, 25 25 C30 18, 25 8, 25 8Z" fill="#2c2c2c" opacity="0.8" />
+                    <path d="M25 8 C25 8, 30 18, 25 25 C20 18, 25 8, 25 8Z" fill="#b8960c" opacity="0.5" />
+                    <path d="M12 20 C12 20, 20 22, 25 25 C18 28, 12 20, 12 20Z" fill="#2c2c2c" opacity="0.6" />
+                    <path d="M38 20 C38 20, 30 22, 25 25 C32 28, 38 20, 38 20Z" fill="#2c2c2c" opacity="0.6" />
+                    <path d="M15 33 C15 33, 20 28, 25 25 C22 32, 15 33, 15 33Z" fill="#b8960c" opacity="0.5" />
+                    <path d="M35 33 C35 33, 30 28, 25 25 C28 32, 35 33, 35 33Z" fill="#b8960c" opacity="0.5" />
+                    <circle cx="25" cy="25" r="3" fill="#b8960c" />
+                    <path d="M17 38 Q25 42 33 38" stroke="#2c2c2c" stroke-width="1.2" fill="none" />
+                    <path d="M20 40 Q25 43 30 40" stroke="#b8960c" stroke-width="0.8" fill="none" />
+                </svg>
+                <span class="logo-text">Indraprasth</span>
+            </div>
+
+            <h1 class="login-title">Management Portal</h1>
+            <p class="login-subtitle">Authorized personnel only</p>
+            <div class="booking-title-line"></div>
+
+            <form id="loginForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="loginEmail" placeholder="Enter your email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="loginPassword" placeholder="Enter your password" required>
+                </div>
+
+                <div class="login-error" id="loginError"></div>
+
+                <button type="submit" class="btn-submit" id="btnLogin">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-loader" id="btnLoginLoader">
+                        <svg class="spinner" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
+                                stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                        </svg>
+                        Authenticating...
+                    </span>
+                </button>
+            </form>
+
+            <a href="index.html" class="login-back-link">← Back to Hotel Website</a>
+        </div>
+    </section>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script>
+        // ---- Supabase Configuration ----
+        const SUPABASE_URL = 'https://zbvvmvjlkcsmkkxjodag.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpidnZtdmpsa2NzbWtreGpvZGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTA3NDIsImV4cCI6MjA5NjY2Njc0Mn0.BZq8m5aOHsfTraUZoi0ujt3EEgm3r0LnfpxYHmS_j04';
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ---- Check if already logged in ----
+        (async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                window.location.href = 'dashboard.html';
+            }
+        })();
+
+        // ---- Login Form ----
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const btnLogin = document.getElementById('btnLogin');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) return;
+
+            // Show loading
+            btnLogin.classList.add('loading');
+            btnLogin.disabled = true;
+            loginError.textContent = '';
+            loginError.classList.remove('show');
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                // Redirect to dashboard on success
+                window.location.href = 'dashboard.html';
+
+            } catch (err) {
+                console.error('Login error:', err);
+                loginError.textContent = 'Invalid email or password. Please try again.';
+                loginError.classList.add('show');
+                btnLogin.classList.remove('loading');
+                btnLogin.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+
+</html>

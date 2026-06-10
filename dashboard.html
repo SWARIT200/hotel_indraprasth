@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Indraprasth Hotel Management Dashboard - View and manage bookings in real-time.">
+    <title>Dashboard | Indraprasth Hotel</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+
+<body class="dashboard-body">
+
+    <!-- ============================================
+         DASHBOARD HEADER
+         ============================================ -->
+    <header class="dash-header">
+        <div class="dash-header-inner">
+            <a href="index.html" class="navbar-logo">
+                <svg class="logo-icon" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="25" cy="25" r="23" stroke="#c4b690" stroke-width="1.5" fill="none" />
+                    <circle cx="25" cy="25" r="19" stroke="#b8960c" stroke-width="0.8" fill="none" />
+                    <path d="M25 8 C25 8, 20 18, 25 25 C30 18, 25 8, 25 8Z" fill="#c4b690" opacity="0.8" />
+                    <path d="M25 8 C25 8, 30 18, 25 25 C20 18, 25 8, 25 8Z" fill="#b8960c" opacity="0.5" />
+                    <path d="M12 20 C12 20, 20 22, 25 25 C18 28, 12 20, 12 20Z" fill="#c4b690" opacity="0.6" />
+                    <path d="M38 20 C38 20, 30 22, 25 25 C32 28, 38 20, 38 20Z" fill="#c4b690" opacity="0.6" />
+                    <path d="M15 33 C15 33, 20 28, 25 25 C22 32, 15 33, 15 33Z" fill="#b8960c" opacity="0.5" />
+                    <path d="M35 33 C35 33, 30 28, 25 25 C28 32, 35 33, 35 33Z" fill="#b8960c" opacity="0.5" />
+                    <circle cx="25" cy="25" r="3" fill="#b8960c" />
+                    <path d="M17 38 Q25 42 33 38" stroke="#c4b690" stroke-width="1.2" fill="none" />
+                    <path d="M20 40 Q25 43 30 40" stroke="#b8960c" stroke-width="0.8" fill="none" />
+                </svg>
+                <span class="logo-text">Indraprasth</span>
+            </a>
+            <div class="dash-header-right">
+                <span class="dash-live-badge" id="liveBadge">
+                    <span class="live-dot"></span>
+                    Live
+                </span>
+                <button class="btn-logout" id="btnLogout">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================
+         TOAST NOTIFICATION
+         ============================================ -->
+    <div class="dash-toast" id="dashToast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#b8960c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+        <span id="toastMessage">New booking received!</span>
+    </div>
+
+    <!-- ============================================
+         DASHBOARD MAIN CONTENT
+         ============================================ -->
+    <main class="dash-main">
+        <div class="dash-grid">
+
+            <!-- CALENDAR PANEL -->
+            <div class="dash-panel dash-calendar-panel">
+                <div class="dash-panel-header">
+                    <h2 class="dash-panel-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        Booking Calendar
+                    </h2>
+                </div>
+                <div class="calendar-nav">
+                    <button class="cal-nav-btn" id="btnPrevMonth" title="Previous Month">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                    </button>
+                    <h3 class="cal-month-label" id="calendarMonthLabel">June 2026</h3>
+                    <button class="cal-nav-btn" id="btnNextMonth" title="Next Month">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+                    </button>
+                </div>
+                <div class="calendar-weekdays">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <div class="calendar-days" id="calendarDays"></div>
+            </div>
+
+            <!-- UPCOMING GUESTS PANEL -->
+            <div class="dash-panel dash-upcoming-panel">
+                <div class="dash-panel-header">
+                    <h2 class="dash-panel-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                            <path d="M16 3.13a4 4 0 010 7.75" />
+                        </svg>
+                        Upcoming Check-ins
+                    </h2>
+                    <p class="dash-panel-desc">Guests arriving in the next 5 days</p>
+                </div>
+                <div class="upcoming-list" id="upcomingList">
+                    <div class="upcoming-empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#b8960c" stroke-width="1.5" opacity="0.4">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        <p>Loading upcoming guests...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LEFT COLUMN: Search Bookings -->
+            <div class="dash-panel dash-search-panel">
+                <div class="dash-panel-header">
+                    <h2 class="dash-panel-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        Search Bookings by Date
+                    </h2>
+                </div>
+
+                <div class="dash-date-picker-row">
+                    <div class="form-group">
+                        <label for="searchDate">Select Date</label>
+                        <input type="date" id="searchDate" name="searchDate">
+                    </div>
+                    <button class="btn-search" id="btnSearch">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        Search
+                    </button>
+                </div>
+
+                <!-- Results -->
+                <div class="dash-results" id="dashResults">
+                    <div class="dash-empty-state" id="emptyState">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#b8960c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                        <p>Select a date to view active bookings</p>
+                    </div>
+
+                    <div class="dash-results-header" id="resultsHeader" style="display:none;">
+                        <h3 id="resultsTitle">Bookings for —</h3>
+                        <span class="dash-results-count" id="resultsCount">0 bookings</span>
+                    </div>
+
+                    <div class="dash-table-wrap" id="tableWrap" style="display:none;">
+                        <table class="dash-table" id="bookingsTable">
+                            <thead>
+                                <tr>
+                                    <th>Guest Name</th>
+                                    <th>Phone</th>
+                                    <th>Room</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Nights</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingsBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="dash-no-results" id="noResults" style="display:none;">
+                        <p>No bookings found for this date.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Manual Booking -->
+            <div class="dash-panel dash-manual-panel">
+                <div class="dash-panel-header">
+                    <h2 class="dash-panel-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        Add Manual Booking
+                    </h2>
+                    <p class="dash-panel-desc">Block dates or add walk-in guests</p>
+                </div>
+
+                <form id="manualBookingForm" autocomplete="off">
+                    <div class="form-group">
+                        <label for="manualGuestName">Guest Name</label>
+                        <input type="text" id="manualGuestName" placeholder="Guest name or 'Blocked'" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="manualGuestPhone">Guest Phone <span class="optional-label">(optional)</span></label>
+                        <input type="tel" id="manualGuestPhone" placeholder="10-digit phone number" pattern="[0-9]{10}" maxlength="10" minlength="10" title="Please enter exactly 10 digits" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="manualRoom">Room Number</label>
+                        <select id="manualRoom" required>
+                            <option value="" disabled selected>Select room</option>
+                            <optgroup label="Non-AC Rooms">
+                                <option value="101">Room 101 — Non-AC</option>
+                                <option value="102">Room 102 — Non-AC</option>
+                                <option value="103">Room 103 — Non-AC</option>
+                            </optgroup>
+                            <optgroup label="AC Rooms">
+                                <option value="104">Room 104 — AC</option>
+                                <option value="105">Room 105 — AC</option>
+                                <option value="106">Room 106 — AC</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="manualCheckIn">Check-in Date</label>
+                            <input type="date" id="manualCheckIn" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="manualCheckInTime">Check-in Time</label>
+                            <input type="time" id="manualCheckInTime" value="12:00" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="manualCheckOut">Check-out Date</label>
+                            <input type="date" id="manualCheckOut" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="manualCheckOutTime">Check-out Time</label>
+                            <input type="time" id="manualCheckOutTime" value="11:00" required>
+                        </div>
+                    </div>
+
+                    <div class="manual-status" id="manualStatus"></div>
+
+                    <button type="submit" class="btn-submit" id="btnManualSubmit">
+                        <span class="btn-text">Add Booking</span>
+                        <span class="btn-loader" id="btnManualLoader">
+                            <svg class="spinner" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none"
+                                    stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+                            </svg>
+                            Saving...
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- ============================================
+         SCRIPTS
+         ============================================ -->
+    <script>
+        // ---- Supabase Configuration ----
+        const SUPABASE_URL = 'https://zbvvmvjlkcsmkkxjodag.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpidnZtdmpsa2NzbWtreGpvZGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTA3NDIsImV4cCI6MjA5NjY2Njc0Mn0.BZq8m5aOHsfTraUZoi0ujt3EEgm3r0LnfpxYHmS_j04';
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ---- Auth Guard: Redirect if not logged in ----
+        let currentSession = null;
+        (async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentSession = session;
+            initDashboard();
+        })();
+
+        // ---- DOM References ----
+        const searchDateInput = document.getElementById('searchDate');
+        const btnSearch = document.getElementById('btnSearch');
+        const bookingsBody = document.getElementById('bookingsBody');
+        const resultsHeader = document.getElementById('resultsHeader');
+        const resultsTitle = document.getElementById('resultsTitle');
+        const resultsCount = document.getElementById('resultsCount');
+        const tableWrap = document.getElementById('tableWrap');
+        const noResults = document.getElementById('noResults');
+        const emptyState = document.getElementById('emptyState');
+
+        let currentSearchDate = null;
+
+        // ---- Initialize Dashboard ----
+        function initDashboard() {
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            searchDateInput.value = today;
+
+            // Init manual booking date constraints
+            document.getElementById('manualCheckIn').min = today;
+            document.getElementById('manualCheckOut').min = today;
+
+            // Load today's bookings
+            searchBookings(today);
+
+            // Initialize calendar
+            initCalendar();
+
+            // Load upcoming guests
+            fetchUpcomingGuests();
+
+            // Setup realtime subscription
+            setupRealtime();
+        }
+
+        // ---- Search Bookings by Date (Direct Supabase query) ----
+        async function searchBookings(dateStr) {
+            currentSearchDate = dateStr;
+            emptyState.style.display = 'none';
+            noResults.style.display = 'none';
+            tableWrap.style.display = 'none';
+            resultsHeader.style.display = 'flex';
+            resultsTitle.textContent = `Bookings for ${formatDateDisplay(dateStr)}`;
+            resultsCount.textContent = 'Loading...';
+
+            try {
+                // Query: where check_in_date <= selectedDate AND check_out_date >= selectedDate
+                const { data, error } = await supabaseClient
+                    .from('bookings')
+                    .select('*')
+                    .lte('check_in_date', dateStr)
+                    .gte('check_out_date', dateStr)
+                    .order('room_number', { ascending: true });
+
+                if (error) throw error;
+
+                renderBookings(data);
+
+            } catch (err) {
+                console.error('Search error:', err);
+                resultsCount.textContent = 'Error loading bookings';
+            }
+        }
+
+        function renderBookings(bookings) {
+            bookingsBody.innerHTML = '';
+
+            if (!bookings || bookings.length === 0) {
+                tableWrap.style.display = 'none';
+                noResults.style.display = 'flex';
+                resultsCount.textContent = '0 bookings';
+                return;
+            }
+
+            noResults.style.display = 'none';
+            tableWrap.style.display = 'block';
+            resultsCount.textContent = `${bookings.length} booking${bookings.length > 1 ? 's' : ''}`;
+
+            bookings.forEach((booking, index) => {
+                const nights = Math.round(
+                    (new Date(booking.check_out_date) - new Date(booking.check_in_date)) / (1000 * 60 * 60 * 24)
+                );
+
+                const row = document.createElement('tr');
+                row.classList.add('slide-in');
+                row.style.animationDelay = `${index * 0.05}s`;
+                row.innerHTML = `
+                    <td><strong>${escapeHTML(booking.guest_name)}</strong></td>
+                    <td>${booking.guest_phone ? escapeHTML(booking.guest_phone) : '—'}</td>
+                    <td><span class="room-badge">${escapeHTML(booking.room_number)}</span></td>
+                    <td>
+                        ${formatDateDisplay(booking.check_in_date)}<br>
+                        <small style="color:#a09878">${booking.check_in_time ? formatTimeDisplay(booking.check_in_time) : '12:00 PM'}</small>
+                    </td>
+                    <td>
+                        ${formatDateDisplay(booking.check_out_date)}<br>
+                        <small style="color:#a09878">${booking.check_out_time ? formatTimeDisplay(booking.check_out_time) : '11:00 AM'}</small>
+                    </td>
+                    <td><span class="nights-badge">${nights}</span></td>
+                `;
+                bookingsBody.appendChild(row);
+            });
+        }
+
+        // ---- Date Search Event ----
+        btnSearch.addEventListener('click', () => {
+            const dateVal = searchDateInput.value;
+            if (dateVal) searchBookings(dateVal);
+        });
+
+        searchDateInput.addEventListener('change', () => {
+            const dateVal = searchDateInput.value;
+            if (dateVal) searchBookings(dateVal);
+        });
+
+        // ---- Realtime Subscription ----
+        function setupRealtime() {
+            const channel = supabaseClient
+                .channel('bookings-realtime')
+                .on(
+                    'postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'bookings' },
+                    (payload) => {
+                        const newBooking = payload.new;
+
+                        // Show toast notification
+                        showToast(`New booking: ${newBooking.guest_name} — Room ${newBooking.room_number}`);
+
+                        // If we have an active search date, check if this new booking is relevant
+                        if (currentSearchDate) {
+                            const searchDate = currentSearchDate;
+                            const checkIn = newBooking.check_in_date;
+                            const checkOut = newBooking.check_out_date;
+
+                            if (checkIn <= searchDate && checkOut >= searchDate) {
+                                // This booking is active on the current search date — re-fetch to show it
+                                searchBookings(searchDate);
+                            }
+                        }
+
+                        // Refresh calendar and upcoming guests on new booking
+                        renderCalendar();
+                        fetchUpcomingGuests();
+                    }
+                )
+                .subscribe((status) => {
+                    const liveBadge = document.getElementById('liveBadge');
+                    if (status === 'SUBSCRIBED') {
+                        liveBadge.classList.add('connected');
+                    }
+                });
+        }
+
+        // ---- Toast Notification ----
+        function showToast(message) {
+            const toast = document.getElementById('dashToast');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // ---- Manual Booking Form ----
+        const manualForm = document.getElementById('manualBookingForm');
+        const manualStatus = document.getElementById('manualStatus');
+        const btnManualSubmit = document.getElementById('btnManualSubmit');
+        const manualCheckIn = document.getElementById('manualCheckIn');
+        const manualCheckOut = document.getElementById('manualCheckOut');
+
+        // Smart date validation for manual booking
+        manualCheckIn.addEventListener('change', () => {
+            if (manualCheckIn.value) {
+                const nextDay = new Date(manualCheckIn.value);
+                nextDay.setDate(nextDay.getDate() + 1);
+                manualCheckOut.min = nextDay.toISOString().split('T')[0];
+
+                if (manualCheckOut.value && manualCheckOut.value <= manualCheckIn.value) {
+                    manualCheckOut.value = nextDay.toISOString().split('T')[0];
+                }
+            }
+        });
+
+        manualForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const guestName = document.getElementById('manualGuestName').value.trim();
+            const guestPhone = document.getElementById('manualGuestPhone').value.trim();
+            const roomNumber = document.getElementById('manualRoom').value;
+            const checkInDate = manualCheckIn.value;
+            const checkOutDate = manualCheckOut.value;
+            const checkInTime = document.getElementById('manualCheckInTime').value;
+            const checkOutTime = document.getElementById('manualCheckOutTime').value;
+
+            if (!guestName || !roomNumber || !checkInDate || !checkOutDate) return;
+
+            if (checkOutDate <= checkInDate) {
+                manualStatus.innerHTML = '<span class="status-unavailable">Check-out must be after check-in.</span>';
+                manualStatus.classList.add('show');
+                return;
+            }
+
+            // Show loading
+            btnManualSubmit.classList.add('loading');
+            btnManualSubmit.disabled = true;
+            manualStatus.innerHTML = '';
+            manualStatus.classList.remove('show');
+
+            try {
+                // Check for conflicts
+                const { data: conflicts } = await supabaseClient
+                    .from('bookings')
+                    .select('id')
+                    .eq('room_number', roomNumber)
+                    .lt('check_in_date', checkOutDate)
+                    .gt('check_out_date', checkInDate);
+
+                if (conflicts && conflicts.length > 0) {
+                    manualStatus.innerHTML = '<span class="status-unavailable">✕ This room is already booked for those dates.</span>';
+                    manualStatus.classList.add('show');
+                    btnManualSubmit.classList.remove('loading');
+                    btnManualSubmit.disabled = false;
+                    return;
+                }
+
+                // Insert booking
+                const { error } = await supabaseClient
+                    .from('bookings')
+                    .insert({
+                        guest_name: guestName,
+                        guest_phone: guestPhone || null,
+                        room_number: roomNumber,
+                        check_in_date: checkInDate,
+                        check_in_time: checkInTime,
+                        check_out_date: checkOutDate,
+                        check_out_time: checkOutTime
+                    });
+
+                if (error) throw error;
+
+                manualStatus.innerHTML = '<span class="status-available">✓ Booking added successfully!</span>';
+                manualStatus.classList.add('show');
+                manualForm.reset();
+
+                // Refresh search results if we have a date selected
+                if (currentSearchDate) {
+                    searchBookings(currentSearchDate);
+                }
+
+                setTimeout(() => {
+                    manualStatus.innerHTML = '';
+                    manualStatus.classList.remove('show');
+                }, 3000);
+
+            } catch (err) {
+                console.error('Manual booking error:', err);
+                manualStatus.innerHTML = '<span class="status-unavailable">Something went wrong. Please try again.</span>';
+                manualStatus.classList.add('show');
+            } finally {
+                btnManualSubmit.classList.remove('loading');
+                btnManualSubmit.disabled = false;
+            }
+        });
+
+        // ---- Logout ----
+        document.getElementById('btnLogout').addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'login.html';
+        });
+
+        // ============================================
+        //  CALENDAR
+        // ============================================
+        let calYear, calMonth;
+        let monthBookings = [];
+        const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+        function initCalendar() {
+            const now = new Date();
+            calYear = now.getFullYear();
+            calMonth = now.getMonth();
+            renderCalendar();
+
+            document.getElementById('btnPrevMonth').addEventListener('click', () => {
+                calMonth--;
+                if (calMonth < 0) { calMonth = 11; calYear--; }
+                renderCalendar();
+            });
+
+            document.getElementById('btnNextMonth').addEventListener('click', () => {
+                calMonth++;
+                if (calMonth > 11) { calMonth = 0; calYear++; }
+                renderCalendar();
+            });
+        }
+
+        async function renderCalendar() {
+            const label = document.getElementById('calendarMonthLabel');
+            label.textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
+
+            // Fetch bookings overlapping this month
+            await fetchMonthBookings();
+
+            const grid = document.getElementById('calendarDays');
+            grid.innerHTML = '';
+
+            const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
+            const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            // Empty cells before month starts
+            for (let i = 0; i < firstDay; i++) {
+                const empty = document.createElement('div');
+                empty.className = 'cal-day empty';
+                grid.appendChild(empty);
+            }
+
+            // Day cells
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dayEl = document.createElement('div');
+                dayEl.className = 'cal-day';
+
+                const numSpan = document.createElement('span');
+                numSpan.className = 'cal-day-num';
+                numSpan.textContent = d;
+                dayEl.appendChild(numSpan);
+
+                // Mark today
+                if (dateStr === todayStr) dayEl.classList.add('today');
+
+                // Mark selected
+                if (dateStr === currentSearchDate) dayEl.classList.add('selected');
+
+                // Check bookings active on this day
+                const dayBookings = monthBookings.filter(b =>
+                    b.check_in_date <= dateStr && b.check_out_date >= dateStr
+                );
+
+                if (dayBookings.length > 0) {
+                    dayEl.classList.add('has-booking');
+                    const dotsWrap = document.createElement('div');
+                    dotsWrap.className = 'cal-dots';
+                    const count = Math.min(dayBookings.length, 4);
+                    for (let i = 0; i < count; i++) {
+                        const dot = document.createElement('span');
+                        dot.className = 'cal-dot';
+                        dotsWrap.appendChild(dot);
+                    }
+                    dayEl.appendChild(dotsWrap);
+                }
+
+                // Click handler
+                dayEl.addEventListener('click', () => {
+                    grid.querySelectorAll('.cal-day.selected').forEach(el => el.classList.remove('selected'));
+                    dayEl.classList.add('selected');
+                    searchDateInput.value = dateStr;
+                    searchBookings(dateStr);
+                    document.getElementById('dashResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+
+                grid.appendChild(dayEl);
+            }
+        }
+
+        async function fetchMonthBookings() {
+            const monthStart = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-01`;
+            const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+            const monthEnd = `${calYear}-${String(calMonth + 1).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('bookings')
+                    .select('*')
+                    .lte('check_in_date', monthEnd)
+                    .gte('check_out_date', monthStart);
+
+                if (error) throw error;
+                monthBookings = data || [];
+            } catch (err) {
+                console.error('Calendar fetch error:', err);
+                monthBookings = [];
+            }
+        }
+
+        // ============================================
+        //  UPCOMING GUESTS (Next 5 Days)
+        // ============================================
+        async function fetchUpcomingGuests() {
+            const today = new Date();
+            const dates = [];
+            for (let i = 1; i <= 5; i++) {
+                const d = new Date(today);
+                d.setDate(d.getDate() + i);
+                dates.push(d.toISOString().split('T')[0]);
+            }
+
+            const startDate = dates[0];
+            const endDate = dates[dates.length - 1];
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('bookings')
+                    .select('*')
+                    .gte('check_in_date', startDate)
+                    .lte('check_in_date', endDate)
+                    .order('check_in_date', { ascending: true });
+
+                if (error) throw error;
+                renderUpcomingGuests(data || [], dates);
+            } catch (err) {
+                console.error('Upcoming guests error:', err);
+                document.getElementById('upcomingList').innerHTML = '<div class="upcoming-empty"><p>Could not load upcoming guests.</p></div>';
+            }
+        }
+
+        function renderUpcomingGuests(bookings, dates) {
+            const container = document.getElementById('upcomingList');
+            container.innerHTML = '';
+
+            if (bookings.length === 0) {
+                container.innerHTML = `
+                    <div class="upcoming-empty">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#b8960c" stroke-width="1.5" opacity="0.4">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4-4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                        <p>No upcoming check-ins in the next 5 days</p>
+                    </div>
+                `;
+                return;
+            }
+
+            dates.forEach(dateStr => {
+                const dayBookings = bookings.filter(b => b.check_in_date === dateStr);
+                if (dayBookings.length === 0) return;
+
+                const section = document.createElement('div');
+                section.className = 'upcoming-day';
+
+                // Day header with relative label
+                const dayDiff = Math.round((new Date(dateStr) - new Date(new Date().toISOString().split('T')[0])) / (1000*60*60*24));
+                const relLabel = dayDiff === 1 ? 'Tomorrow' : `In ${dayDiff} days`;
+
+                let html = `<div class="upcoming-day-header">
+                    <span class="upcoming-date">${formatDateDisplay(dateStr)}</span>
+                    <span class="upcoming-rel">${relLabel}</span>
+                </div>`;
+
+                dayBookings.forEach(b => {
+                    const nights = Math.round((new Date(b.check_out_date) - new Date(b.check_in_date)) / (1000*60*60*24));
+                    const roomType = ['101','102','103'].includes(b.room_number) ? 'Non-AC' : 'AC';
+                    const inTime = b.check_in_time ? formatTimeDisplay(b.check_in_time) : '12:00 PM';
+                    const outTime = b.check_out_time ? formatTimeDisplay(b.check_out_time) : '11:00 AM';
+                    html += `
+                        <div class="upcoming-card">
+                            <div class="upcoming-guest-name">${escapeHTML(b.guest_name)}</div>
+                            <div class="upcoming-details-grid">
+                                <div class="upcoming-detail"><span>📱</span> ${b.guest_phone || '—'}</div>
+                                <div class="upcoming-detail"><span>🚪</span> Room ${escapeHTML(b.room_number)} (${roomType})</div>
+                                <div class="upcoming-detail"><span>📅</span> ${formatDateDisplay(b.check_in_date)} (${inTime})</div>
+                                <div class="upcoming-detail"><span>🌙</span> ${nights} Night${nights > 1 ? 's' : ''}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                section.innerHTML = html;
+                container.appendChild(section);
+            });
+        }
+
+        // ---- Utility Functions ----
+        function formatDateDisplay(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function formatTimeDisplay(timeStr) {
+            if (!timeStr) return '';
+            const [h, m] = timeStr.split(':');
+            const hour = parseInt(h);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const h12 = hour % 12 || 12;
+            return `${h12}:${m} ${ampm}`;
+        }
+
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+
+</body>
+
+</html>
